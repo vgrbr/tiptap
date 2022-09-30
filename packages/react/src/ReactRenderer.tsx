@@ -14,22 +14,21 @@ function isClassComponent(Component: any) {
 
 function isForwardRefComponent(Component: any) {
   return !!(
-    typeof Component === 'object'
-    && Component.$$typeof?.toString() === 'Symbol(react.forward_ref)'
+    typeof Component === 'object' && Component.$$typeof?.toString() === 'Symbol(react.forward_ref)'
   )
 }
 
 export interface ReactRendererOptions {
-  editor: Editor,
-  props?: Record<string, any>,
-  as?: string,
-  className?: string,
+  editor: Editor;
+  props?: Record<string, any>;
+  as?: string;
+  className?: string;
 }
 
 type ComponentType<R, P> =
-  React.ComponentClass<P> |
-  React.FunctionComponent<P> |
-  React.ForwardRefExoticComponent<React.PropsWithoutRef<P> & React.RefAttributes<R>>;
+  | React.ComponentClass<P>
+  | React.FunctionComponent<P>
+  | React.ForwardRefExoticComponent<React.PropsWithoutRef<P> & React.RefAttributes<R>>;
 
 export class ReactRenderer<R = unknown, P = unknown> {
   id: string
@@ -46,13 +45,13 @@ export class ReactRenderer<R = unknown, P = unknown> {
 
   ref: R | null = null
 
-  constructor(component: ComponentType<R, P>, {
-    editor,
-    props = {},
-    as = 'div',
-    className = '',
-  }: ReactRendererOptions) {
-    this.id = Math.floor(Math.random() * 0xFFFFFFFF).toString()
+  constructor(
+    component: ComponentType<R, P>,
+    {
+      editor, props = {}, as = 'div', className = '',
+    }: ReactRendererOptions,
+  ) {
+    this.id = Math.floor(Math.random() * 0xffffffff).toString()
     this.component = component
     this.editor = editor as ExtendedEditor
     this.props = props
@@ -76,20 +75,17 @@ export class ReactRenderer<R = unknown, P = unknown> {
       }
     }
 
-    this.reactElement = <Component {...props } />
+    this.reactElement = <Component {...props} />
 
-    queueMicrotask(() => {
-      flushSync(() => {
-        if (this.editor?.contentComponent) {
-          this.editor.contentComponent.setState({
-            renderers: this.editor.contentComponent.state.renderers.set(
-              this.id,
-              this,
-            ),
-          })
-        }
-      })
+    // queueMicrotask(() => {
+    flushSync(() => {
+      if (this.editor?.contentComponent) {
+        this.editor.contentComponent.setState({
+          renderers: this.editor.contentComponent.state.renderers.set(this.id, this),
+        })
+      }
     })
+    // });
   }
 
   updateProps(props: Record<string, any> = {}): void {
